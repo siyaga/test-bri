@@ -13,11 +13,6 @@ class MsProduct extends Model
 
     protected $primaryKey = 'id';
 
-    /**
-     * Indicates if the IDs are auto-incrementing.
-     *
-     * @var bool
-     */
     public $incrementing = false;
     protected $keyType = 'string';
     
@@ -25,4 +20,13 @@ class MsProduct extends Model
         'namaproduct',
         'qty',
     ];
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($model) {
+            if (empty($model->id)) {
+                $model->id = (string) Str::uuid();
+            }
+        });
+    }
 }

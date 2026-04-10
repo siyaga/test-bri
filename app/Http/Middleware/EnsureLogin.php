@@ -16,8 +16,8 @@ class EnsureLogin
      */
     public function handle(Request $request, Closure $next)
     {
-        if (!$request->session()->has('login_user_id')) {
-            return redirect('login');
+       if (!auth('api')->check()) {
+            return $this->errorResponse('Unauthorized. Token is invalid or expired.', 401);
         }
 
         return $next($request);

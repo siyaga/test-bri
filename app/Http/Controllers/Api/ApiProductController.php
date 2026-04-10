@@ -4,10 +4,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use App\Models\MsProduct;
+use App\Traits\ApiResponse;
 
 class ApiProductController extends Controller
 {
+    use ApiResponse;
+
     public function inquiry(Request $request)
     {
         $query = MsProduct::query();
@@ -18,47 +23,52 @@ class ApiProductController extends Controller
 
         $products = $query->get();
 
-        return response()->json([
-            'success' => true,
-            'data' => $products,
-        ]);
+       return $this->successResponse($products, 'List of products retrieved');
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'namaproduct' => 'required|string|max:255',
             'qty' => 'required|integer|min:0',
         ]);
 
-        $product = MsProduct::create($validated);
-        return response()->json(['success' => true, 'data' => $product], 201);
+        if ($validator->fails()) {
+            return $this->errorResponse($validator->errors()->first(), 422);
+        }
+
+        $product = MsProduct::create($validator->validated());
+        return $this->successResponse($product, 'Product created successfully', 201);
     }
 
     public function update(Request $request, $id)
     {
         $product = MsProduct::find($id);
         if (!$product) {
-            return response()->json(['success' => false, 'message' => 'Product not found'], 404);
+            return $this->errorResponse('Product not found', 404);
         }
 
-        $validated = $request->validate([
+       $validator = Validator::make($request->all(), [
             'namaproduct' => 'sometimes|required|string|max:255',
-            'qty' => 'sometimes|required|integer|min:0',
+            'qty'         => 'sometimes|required|integer|min:0',
         ]);
 
-        $product->update($validated);
-        return response()->json(['success' => true, 'data' => $product]);
+        if ($validator->fails()) {
+            return $this->errorResponse($validator->errors()->first(), 422);
+        }
+
+        $product->update($validator->validated());
+        return $this->successResponse($product, 'Product updated successfully');
     }
 
     public function destroy($id)
     {
         $product = MsProduct::find($id);
         if (!$product) {
-            return response()->json(['success' => false, 'message' => 'Product not found'], 404);
+            return $this->errorResponse('Product not found', 404);
         }
 
         $product->delete();
-        return response()->json(['success' => true, 'message' => 'Deleted successfully']);
+        return $this->successResponse(null, 'Product deleted successfully');
     }
 }

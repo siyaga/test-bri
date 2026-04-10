@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Laravel\Passport\HasApiTokens;
+use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Notifications\Notifiable;
 
-class Login extends Authenticatable
+class Login extends Authenticatable implements JWTSubject
 {
-    use HasApiTokens;
+    use Notifiable;
 
     protected $table = 'login';
 
@@ -19,5 +20,14 @@ class Login extends Authenticatable
     protected $hidden = [
         'password',
     ];
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
 }
 
