@@ -47,4 +47,18 @@ class ApiAuthController extends Controller
 
        return $this->successResponse(null, 'Registration successful', 201);
     }
+
+      public function users(Request $request)
+    {
+        $query = login::query();
+
+        if ($request->has('username')) {
+            $query->where('username', 'like', '%' . $request->username . '%');
+        }
+
+        $users = $query->get();
+
+       return $this->successResponse($users, 'List of users retrieved');
+    }
+
 }
